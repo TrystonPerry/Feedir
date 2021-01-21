@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require('fs');
 const cors = require("cors");
 const express = require("./express");
 const app = express();
@@ -23,6 +24,27 @@ const formatBody = body => {
   }
   return obj;
 };
+
+app.use((req, res, next) => {
+  // If API method
+  if (/^\/api/.test(req.path)) {
+    next();
+    return;
+  }
+
+  // Check if static file matches path url
+  const path = `${__dirname}/public/${req.path}`;
+
+  // If static file exists, send it
+  if (fs.existsSync(path)) {
+    res.sendFile(path);
+  }
+
+  // If static file doesn't exist, assume it's a SPA url
+  else {
+    res.sendFile(`${__dirname}/public/index.html`);
+  }
+})
 
 // ROUTES
 app.post("/api/oauth/request_token", async (req, res) => {
