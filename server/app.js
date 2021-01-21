@@ -1,30 +1,141 @@
-require("dotenv").config()
-const cors = require("cors")
-const express = require("express")
-const app = express()
-const bodyParser = require("body-parser")
-const request = require("request")
+require("dotenv").config();
+const cors = require("cors");
+const express = require("./express");
+const app = express();
+const bodyParser = require("body-parser");
+const request = require("request");
+const Twitter = require("twitter");
+const client = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET
+})
 
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ extended: true }));
+app.use(cors());
+
+const formatBody = body => {
+  const props = body.split("&");
+  const obj = {};
+  for (let i = 0; i < props.length; i++) {
+    const keyAndValue = props[i].split("=");
+    obj[keyAndValue[0]] = keyAndValue[1];
+  }
+  return obj;
+};
 
 // ROUTES
-app.get("/api/test", async (req, res) => {
-  const oauth = {
-    consumer_key: process.env.TWITTER_CONSUMER_KEY,
-    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-    callback: "http://localhost:3000"
+app.post("/api/oauth/request_token", async (req, res) => {
+  if (!req.body.callback) {
+    res.error({}, "No callback url provided", 400);
+    return;
   }
 
-  request.post({
-    url: "https://api.twitter.com/oauth/request_token",
-    oauth,
-  }, (e, r, body) => {
-    res.send(body)
+  request.post(
+    {
+      url: "https://api.twitter.com/oauth/request_token",
+      oauth: {
+        consumer_key: process.env.TWITTER_CONSUMER_KEY,
+        consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+        callback: req.body.callback
+      }
+    },
+    (err, resp, body) => {
+      if (err) {
+        res.error({}, err, 500);
+        return;
+      }
+
+      body = formatBody(body);
+
+      res.success(body);
+    }
+  );
+});
+
+app.post("/api/oauth/access_token", async (req, res) => {
+  const { oauth_token, oauth_verifier } = req.body;
+
+  if (!oauth_token || !oauth_verifier) {
+    res.error({}, "No oauth_token or oauth_verifier provided", 400);
+    return;
+  }
+
+  request.post(
+    {
+      url: `https://api.twitter.com/oauth/access_token?oauth_token=${oauth_token}&oauth_verifier=${oauth_verifier}`,
+      oauth: {
+        consumer_key: process.env.TWITTER_CONSUMER_KEY,
+        consumer_secret: process.env.TWITTER_CONSUMER_SECRET
+      }
+    },
+    (err, resp, body) => {
+      if (err) {
+        res.error({}, err, 500);
+        return;
+      }
+
+      body = formatBody(body);
+
+      res.success(body);
+    }
+  );
+});
+
+app.post("/api/tweet", async (req, res) => {
+  const tweets = req.body.tweets || [];
+
+  if (!tweets.length) {
+    res.error({}, "You didn't provide any tweets");
+    return
+  }
+
+  const user = new Twitter({
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token_key: req.headers.oauth_token,
+    access_token_secret: req.headers.oauth_token_secret
+  });
+
+  user.post("statuses/update", { status: tweets[0] }, (err, tweet, response) => {
+    if (err) {
+      console.error(err);
+      res.error({}, "Error posting tweet", 500);
+      return 
+    }
+    res.success({});
+  })
+});
+
+app.get("/api/user/:screen_name", async (req, res) => {
+  const { screen_name } = req.params;
+
+  if (!screen_name || !screen_name.length) {
+    res.error({}, "No screen_name provided");
+    return
+  }
+
+  const user = new Twitter({
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token_key: req.headers.oauth_token,
+    access_token_secret: req.headers.oauth_token_secret
+  });
+
+  user.get("users/show", { screen_name }, (err, user, response) => {
+    if (err) {
+      console.error(err);
+      res.error({}, "Error getting user by screen_name", 500);
+      return 
+    }
+    console.log(screen_name)
+    res.success(user);
   })
 })
 
 // LISTEN
 app.listen(process.env.PORT, process.env.IP, () => {
-  console.log(`Follow0 server started on http://${process.env.IP}:${process.env.PORT}`)
-})
+  console.log(
+    `Follow0 server started on http://${process.env.IP}:${process.env.PORT}`
+  );
+});
