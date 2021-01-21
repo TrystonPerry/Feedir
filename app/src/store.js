@@ -11,7 +11,9 @@ export default new Vuex.Store({
     secret: "",
     user_id: "",
     screen_name: "",
-    lists: []
+    lists: [],
+    tweets: [""],
+    picUrl: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png"
   },
 
   mutations: {
@@ -24,6 +26,24 @@ export default new Vuex.Store({
 
     SET_LISTS(state, lists) {
       state.lists = lists;
+    },
+
+    SET_PIC_URL(state, url) {
+      state.picUrl = url
+    },
+
+    SET_TWEET_AT_INDEX(state, { index, tweet }) {
+      state.tweets[index] = tweet;
+      Vue.set(state.tweets, index, tweet);
+      console.log(state.tweets);
+    },
+
+    ADD_TWEET(state, index) {
+      state.tweets.splice(index, 0, "");
+    },
+
+    REMOVE_TWEET(state, index) {
+      state.tweets.splice(index, 1);
     }
   },
 
@@ -62,6 +82,15 @@ export default new Vuex.Store({
       localStorage.setItem("OAUTH_TOKEN_SECRET", data.oauth_token_secret);
       localStorage.setItem("SCREEN_NAME", data.screen_name);
       localStorage.setItem("USER_ID", data.user_id);
+    },
+
+    async getPicUrl({ commit, state }) {
+      console.log(state)
+      const res = await API.user(state.screen_name);
+
+      if (res.ok) {
+        commit("SET_PIC_URL", res.data.profile_image_url_https);
+      }
     }
   }
 });

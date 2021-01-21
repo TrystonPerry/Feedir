@@ -9,13 +9,12 @@
       <!-- <button class="header__unsent">
         Unsent Tweets
       </button> -->
-      <button @click="submit" class="header__tweet">
-        Tweet
+      <button @click="publishTweet" class="header__tweet">
+        {{ tweetButtonText }}
       </button>
     </div>
-    <div class="main">
-      <img :src="picUrl" class="main__pic">
-      <textarea autosize @input="onChange" class="main__textarea" placeholder="What's Happening?"></textarea>
+    <div class="tweets">
+      <Tweet v-for="(tweet, i) in $store.state.tweets" :key="i" :index="i" />
     </div>
   </div>
 </template>
@@ -23,41 +22,48 @@
 <script>
 import API from "@/api"
 
+import Tweet from "@/components/Tweet"
+
 export default {
+  components: {
+    Tweet
+  },
+
   data: () => ({
-    isLoading: true,
-    tweet: "",
-    picUrl: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png"
+    isLoading: true
   }),
 
   async mounted() {
-    const res = await API.user(this.$store.state.screen_name);
-
-    if (res.ok) {
-      this.picUrl = res.data.profile_image_url_https;
-    }
-
+    await this.$store.dispatch("getPicUrl");
     this.isLoading = false;
   },
 
-  methods: {
-    onChange(e) {
-      this.tweet = e.target.value;
-    },
+  computed: {
+    tweetButtonText() {
+      return this.$store.state.tweets.length === 1 ? "Tweet" : "Tweet all"
+    }
+  },
 
-    async submit() {
+  methods: {
+    async publishTweet() {
       if (!this.tweet.length) return 
-      await API.tweet({
-        tweets: [this.tweet],
-        oauth_token: this.$store.state.token,
-        oauth_token_secret: this.$store.state.secret
-      });
+
+      const res = await API.tweet({ tweets: [this.tweet] });
+
+      if (!res.ok) {
+        console.log(res);
+        alert("There was an error sending your tweet");
+        return;
+      }
+
+      this.tweet = ""
+      this.$refs.textarea.style.height = "6rem";
     }
   }
 }
 </script>
 
-<style scoped>
+<style>
 button {
   font-size: 1rem;
   padding: 0.5rem 1rem;
@@ -92,29 +98,5 @@ button {
 .header__unsent, .header__donate {
   background: transparent;
   color: #1DA1F2;
-}
-
-.main {
-  display: flex;
-  flex-direction: row;
-  margin: 1rem;
-}
-
-.main__pic {
-  height: 49px;
-  width: 49px;
-  border-radius: 100%;
-  margin-right: 1rem;
-}
-
-.main__textarea {
-  height: 6rem;
-  width: 100%;
-  background: transparent;
-  border: 0;
-  outline: 0;
-  color: white;
-  font-size: 1.25rem;
-  resize: none;
 }
 </style>
