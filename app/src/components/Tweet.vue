@@ -11,7 +11,7 @@
             ref="textarea" 
             :value="tweet" 
             @input="onInput" 
-            @click="$store.commit('SET_FOCUSED_TWEET', index)" 
+            @focus="$store.commit('SET_FOCUSED_TWEET', index)" 
             autosize 
             class="main__textarea" 
             :placeholder="placeholder">
@@ -54,6 +54,10 @@ export default {
     placeholder() {
       return this.index === 0 ? "What's Happening?" : "Add another Tweet"
     }
+  },
+
+  mounted() {
+    this.$refs.textarea.focus();
   },
 
   methods: {

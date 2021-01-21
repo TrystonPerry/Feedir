@@ -54,6 +54,10 @@ export default new Vuex.Store({
 
     SET_IS_SUBMITTING_TWEET(state, value) {
       state.isSubmittingTweet = value;
+    },
+
+    SET_ALERT_TEXT(state, text) {
+      state.alertText = text;
     }
   },
 
@@ -108,10 +112,11 @@ export default new Vuex.Store({
       commit("SET_IS_SUBMITTING_TWEET", false);
 
       if (!res.ok) {
-        alert("There was an error sending your tweet");
+        commit("SET_ALERT_TEXT", "Error: " + res.error);
         return false;
       }
 
+      commit("SET_ALERT_TEXT", `Tweet${state.tweets.length > 1 ? "s" : ""} sent successfully.`)
       commit("RESET_TWEETS");      
       return true;
     }

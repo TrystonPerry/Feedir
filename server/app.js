@@ -108,13 +108,10 @@ app.post("/api/tweet", async (req, res) => {
         console.log(lastTweetId);
       }
 
-      console.log(query);
-
-      
       user.post("statuses/update", query, (err, tweet, response) => {
         if (err) {
           console.error(err);
-          res.error({}, "Error posting tweet", 500);
+          res.error({}, err[0].message || "There was an unknown error with posting your Tweet(s)", 500);
           reject();
           return 
         }      

@@ -11,17 +11,20 @@
       </div>
       <TweetPage />
     </div>
+    <Alert />
   </div>
 </template>
 
 <script>
 import TweetPage from "@/components/TweetPage.vue";
+import Alert from "@/components/Alert";
 
 export default {
   name: "App",
 
   components: {
-    TweetPage
+    TweetPage,
+    Alert
   }, 
 
   mounted() {
