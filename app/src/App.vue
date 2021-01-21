@@ -11,6 +11,7 @@
       </div>
       <TweetPage />
     </div>
+    <Modal v-if="$store.state.modal" />
     <Alert />
   </div>
 </template>
@@ -18,13 +19,15 @@
 <script>
 import TweetPage from "@/components/TweetPage.vue";
 import Alert from "@/components/Alert";
+import Modal from "@/components/Modal";
 
 export default {
   name: "App",
 
   components: {
     TweetPage,
-    Alert
+    Alert,
+    Modal
   }, 
 
   mounted() {

@@ -1,14 +1,17 @@
 <template>
   <div v-if="!isLoading" class="box">
     <div class="header">
-      <button class="header__donate">
+      <!-- <button class="header__donate">
         <i class="fas fa-dollar-sign"></i>
         Donate
-      </button>
-      <div class="spacer"></div>
-      <!-- <button class="header__unsent">
-        Unsent Tweets
       </button> -->
+      <div class="spacer"></div>
+      <button @click="$store.commit('SET_MODAL', 'DRAFTS')" v-if="$store.state.tweets.length === 1 && !$store.state.tweets[0].length" class="header__unsent">
+        Drafts
+      </button>
+      <button v-else @click="$store.commit('SAVE_TWEETS_AS_DRAFT')" class="header__unsent">
+        Save as Draft
+      </button>
       <button @click="publishTweet" :disabled="isTweetButtonDisabled" class="header__tweet">
         {{ tweetButtonText }}
       </button>

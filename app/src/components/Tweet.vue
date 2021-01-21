@@ -58,6 +58,11 @@ export default {
 
   mounted() {
     this.$refs.textarea.focus();
+    this.$watch("tweet", () => {
+      const textarea = this.$refs.textarea;
+      textarea.style.height = "";
+      textarea.style.height = Math.min(textarea.scrollHeight, 300) + "px";
+    }, { immediate: true })
   },
 
   methods: {
@@ -66,9 +71,6 @@ export default {
         index: this.index,
         tweet: e.target.value
       });
-      const textarea = e.target;
-      textarea.style.height = "";
-      textarea.style.height = Math.min(textarea.scrollHeight, 300) + "px";
     },
 
     addTweet() {

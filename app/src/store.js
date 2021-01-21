@@ -15,7 +15,10 @@ export default new Vuex.Store({
     focusedTweet: 0,
     picUrl: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
     isSubmittingTweet: false,
-    alertText: ""
+    drafts: JSON.parse(localStorage.getItem("DRAFTS")) || [],
+    alertText: "",
+    modal: "",
+    selectedDraft: -1
   },
 
   mutations: {
@@ -47,9 +50,32 @@ export default new Vuex.Store({
       state.tweets.splice(index, 1);
     },
 
+    SAVE_TWEETS_AS_DRAFT(state) {
+      state.drafts.unshift({
+        tweets: state.tweets,
+        date: Date.now()
+      });
+      localStorage.setItem("DRAFTS", JSON.stringify(state.drafts));
+      state.tweets = [""];
+      state.focusedTweet = 0;
+      state.selectedDraft = -1;
+    },
+
+    SET_DRAFT_AS_TWEETS(state, index) {
+      state.tweets = JSON.parse(JSON.stringify(state.drafts[index].tweets));
+      state.selectedDraft = index;
+      state.modal = "";
+    },
+
+    DELETE_DRAFT(state, index) {
+      state.drafts.splice(index, 1);
+      localStorage.setItem("DRAFTS", state.drafts);
+    },
+
     RESET_TWEETS(state) {
       state.tweets = [""];
       state.focusedTweet = 0;
+      state.selectedDraft = -1;
     },
 
     SET_IS_SUBMITTING_TWEET(state, value) {
@@ -58,7 +84,11 @@ export default new Vuex.Store({
 
     SET_ALERT_TEXT(state, text) {
       state.alertText = text;
-    }
+    },
+
+    SET_MODAL(state, modal) {
+      state.modal = modal;
+    },
   },
 
   actions: {
@@ -114,6 +144,10 @@ export default new Vuex.Store({
       if (!res.ok) {
         commit("SET_ALERT_TEXT", "Error: " + res.error);
         return false;
+      }
+
+      if (state.selectedDraft > -1) {
+        commit("DELETE_DRAFT", state.selectedDraft);
       }
 
       commit("SET_ALERT_TEXT", `Tweet${state.tweets.length > 1 ? "s" : ""} sent successfully.`)
