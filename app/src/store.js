@@ -88,7 +88,7 @@ export default new Vuex.Store({
 
     SET_MODAL(state, modal) {
       state.modal = modal;
-    },
+    }
   },
 
   actions: {

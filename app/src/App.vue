@@ -13,6 +13,14 @@
     
     <div style="display:flex;justify-content:center" v-else>
       <TweetPage />
+
+      <button 
+        v-if="$store.state.tweets.length === 1 && !$store.state.tweets[0].length"
+        @click="logout"
+        style="position:fixed;bottom:1rem;right:1rem;background:transparent;color:#DB2F2F;border:2px solid #DB2F2F;font-size:0.75rem"
+      >
+        Log Out
+      </button>
     </div>
     <Modal v-if="$store.state.modal" />
     <Alert />
@@ -32,6 +40,13 @@ export default {
     Alert,
     Modal
   }, 
+
+  methods: {
+    logout() {
+      localStorage.clear(); 
+      window.location.reload(false)
+    }
+  },
 
   mounted() {
     // Check if user is already logged in with tokens
