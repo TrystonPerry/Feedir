@@ -15,7 +15,7 @@ export default new Vuex.Store({
     focusedTweet: 0,
     picUrl: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
     isSubmittingTweet: false,
-    drafts: JSON.parse(localStorage.getItem("DRAFTS")) || [],
+    drafts: JSON.parse(localStorage.getItem("DRAFTS") || "[]"),
     alertText: "",
     modal: "",
     selectedDraft: -1
