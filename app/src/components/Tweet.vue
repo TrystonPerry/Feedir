@@ -14,7 +14,9 @@
             @focus="$store.commit('SET_FOCUSED_TWEET', index)" 
             autosize 
             class="main__textarea" 
-            :placeholder="placeholder">
+            :placeholder="placeholder"
+            maxlength="280"
+          >
           </textarea>
           <div>
             <button

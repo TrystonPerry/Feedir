@@ -1,14 +1,17 @@
 <template>
   <div id="app">
-    <button
-      v-if="!$store.state.token"
-      @click="$store.dispatch('requestOauthToken')"
-    >
-      Log In With Twitter
-    </button>
-    <div class="bg-gray-400" v-else>
-      <div>
-      </div>
+    <div v-if="!$store.state.token" style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%)">
+      <h1 style="font-size: 3rem;margin-top:0;color:white;font-weight:bold">
+        Tweet<br>
+        Without<br>
+        Distractions.
+      </h1>
+      <button @click="$store.dispatch('requestOauthToken')">
+        Tweet with Feedir
+      </button>
+    </div>
+    
+    <div style="display:flex;justify-content:center" v-else>
       <TweetPage />
     </div>
     <Modal v-if="$store.state.modal" />
