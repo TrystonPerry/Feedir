@@ -11,9 +11,11 @@ export default new Vuex.Store({
     secret: "",
     user_id: "",
     screen_name: "",
-    lists: [],
     tweets: [""],
-    picUrl: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png"
+    focusedTweet: 0,
+    picUrl: "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png",
+    isSubmittingTweet: false,
+    alertText: ""
   },
 
   mutations: {
@@ -24,10 +26,6 @@ export default new Vuex.Store({
       state.user_id = user_id;
     },
 
-    SET_LISTS(state, lists) {
-      state.lists = lists;
-    },
-
     SET_PIC_URL(state, url) {
       state.picUrl = url
     },
@@ -35,7 +33,10 @@ export default new Vuex.Store({
     SET_TWEET_AT_INDEX(state, { index, tweet }) {
       state.tweets[index] = tweet;
       Vue.set(state.tweets, index, tweet);
-      console.log(state.tweets);
+    },
+
+    SET_FOCUSED_TWEET(state, index) {
+      state.focusedTweet = index
     },
 
     ADD_TWEET(state, index) {
@@ -44,6 +45,15 @@ export default new Vuex.Store({
 
     REMOVE_TWEET(state, index) {
       state.tweets.splice(index, 1);
+    },
+
+    RESET_TWEETS(state) {
+      state.tweets = [""];
+      state.focusedTweet = 0;
+    },
+
+    SET_IS_SUBMITTING_TWEET(state, value) {
+      state.isSubmittingTweet = value;
     }
   },
 
@@ -85,12 +95,25 @@ export default new Vuex.Store({
     },
 
     async getPicUrl({ commit, state }) {
-      console.log(state)
       const res = await API.user(state.screen_name);
 
       if (res.ok) {
         commit("SET_PIC_URL", res.data.profile_image_url_https);
       }
+    },
+
+    async publishTweet({ commit, state }) {
+      commit("SET_IS_SUBMITTING_TWEET", true);
+      const res = await API.tweet({ tweets: state.tweets });
+      commit("SET_IS_SUBMITTING_TWEET", false);
+
+      if (!res.ok) {
+        alert("There was an error sending your tweet");
+        return false;
+      }
+
+      commit("RESET_TWEETS");      
+      return true;
     }
   }
 });

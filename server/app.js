@@ -97,14 +97,35 @@ app.post("/api/tweet", async (req, res) => {
     access_token_secret: req.headers.oauth_token_secret
   });
 
-  user.post("statuses/update", { status: tweets[0] }, (err, tweet, response) => {
-    if (err) {
-      console.error(err);
-      res.error({}, "Error posting tweet", 500);
-      return 
-    }
-    res.success({});
-  })
+  let lastTweetId = -1;
+  for (let i = 0; i < tweets.length; i++) {
+    await (new Promise((resolve, reject) => {
+      const query = { status: tweets[i] };
+      
+      // If not first tweet
+      if (i > 0 && lastTweetId > -1) {
+        query.in_reply_to_status_id = lastTweetId.toString();
+        console.log(lastTweetId);
+      }
+
+      console.log(query);
+
+      
+      user.post("statuses/update", query, (err, tweet, response) => {
+        if (err) {
+          console.error(err);
+          res.error({}, "Error posting tweet", 500);
+          reject();
+          return 
+        }      
+
+        lastTweetId = tweet.id_str;
+        resolve();
+      })
+    }));
+  }
+
+  res.success({});
 });
 
 app.get("/api/user/:screen_name", async (req, res) => {
@@ -128,7 +149,6 @@ app.get("/api/user/:screen_name", async (req, res) => {
       res.error({}, "Error getting user by screen_name", 500);
       return 
     }
-    console.log(screen_name)
     res.success(user);
   })
 })

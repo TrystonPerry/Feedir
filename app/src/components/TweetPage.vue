@@ -9,7 +9,7 @@
       <!-- <button class="header__unsent">
         Unsent Tweets
       </button> -->
-      <button @click="publishTweet" class="header__tweet">
+      <button @click="publishTweet" :disabled="isTweetButtonDisabled" class="header__tweet">
         {{ tweetButtonText }}
       </button>
     </div>
@@ -40,24 +40,28 @@ export default {
 
   computed: {
     tweetButtonText() {
+      if (this.$store.state.isSubmittingTweet) return "Publishing...";
       return this.$store.state.tweets.length === 1 ? "Tweet" : "Tweet all"
+    },
+
+    tweets() {
+      return this.$store.state.tweets;
+    },
+
+    isTweetButtonDisabled() {
+      if (this.$store.state.isSubmittingTweet) return true;
+      for (let i = 0; i < this.tweets.length; i++) {
+        if (this.tweets[i].length === 0) {
+          return true;
+        }
+      }
     }
   },
 
   methods: {
     async publishTweet() {
-      if (!this.tweet.length) return 
-
-      const res = await API.tweet({ tweets: [this.tweet] });
-
-      if (!res.ok) {
-        console.log(res);
-        alert("There was an error sending your tweet");
-        return;
-      }
-
-      this.tweet = ""
-      this.$refs.textarea.style.height = "6rem";
+      if (this.isTweetButtonDisabled) return;      
+      await this.$store.dispatch("publishTweet");
     }
   }
 }
@@ -73,6 +77,11 @@ button {
   cursor: pointer;
   margin: 0.25rem;
   font-weight: bold;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .box {

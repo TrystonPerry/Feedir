@@ -42,8 +42,6 @@ export default {
     oauth_token = this.$route.query.oauth_token;
     const oauth_verifier = this.$route.query.oauth_verifier;
     if (oauth_token && oauth_verifier) {
-      console.log("yes")
-      console.log(oauth_token, oauth_verifier)
       this.$store.dispatch("getAccessToken", {
         oauth_token,
         oauth_verifier

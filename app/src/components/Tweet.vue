@@ -7,14 +7,26 @@
       </div>
       <div class="main__tweet-actions">
         <div class="tweet-area">
-          <textarea ref="textarea" :value="tweet" @input="onInput" autosize class="main__textarea" :placeholder="placeholder"></textarea>
+          <textarea 
+            ref="textarea" 
+            :value="tweet" 
+            @input="onInput" 
+            @click="$store.commit('SET_FOCUSED_TWEET', index)" 
+            autosize 
+            class="main__textarea" 
+            :placeholder="placeholder">
+          </textarea>
           <div>
-            <button @click="$store.commit('REMOVE_TWEET', index)" v-if="$store.state.tweets.length > 1" class="footer__add">
+            <button
+              @click="$store.commit('REMOVE_TWEET', index)" 
+              v-if="$store.state.tweets.length > 1 && $store.state.focusedTweet === index" 
+              class="footer__add"
+            >
               <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
-        <div class="footer">
+        <div v-if="$store.state.focusedTweet === index" class="footer">
           <div class="spacer"></div>
           <button v-if="tweet.length > 0" @click="addTweet" class="footer__add">
             <i class="fas fa-plus"></i>
@@ -46,7 +58,6 @@ export default {
 
   methods: {
     onInput(e) {
-      console.log(e.target.value);
       this.$store.commit("SET_TWEET_AT_INDEX", {
         index: this.index,
         tweet: e.target.value
@@ -94,6 +105,7 @@ export default {
 .tweet-area {
   flex-grow: 1;
   display: flex;
+  margin-bottom: rem;
 }
 
 .main__textarea {
@@ -110,7 +122,8 @@ export default {
 .footer {
   display: flex;
   align-items: center;
-  margin: 0.25rem 1rem;
+  padding: 0.25rem 1rem;
+  border-top: 2px solid #3D5466;
 }
 
 .footer__add {
